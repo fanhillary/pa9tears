@@ -222,9 +222,13 @@ template <class Whatever>
 TNode<Whatever> :: TNode (Whatever & element, fstream * fio, long & occupancy): 
 			data (element), height (0), balance (0), left (0), 
 			right (0) {
+	occupancy++;
+	fio -> seekp(0, ios::beg);
+	fio -> write((const char *) &root, sizeof(root));
+	fio -> write((const char *) &occupancy, sizeof(occupancy));
+
 	fio -> seekp(0, ios::end);
 	this_position = fio -> tellp();
-	occupancy++;
 	Write(fio);
 }
 
@@ -247,6 +251,7 @@ Tree<Whatever> :: Tree (const char * datafile) :
 		tree_count = 0;
 
 		if (beginning == ending) {
+			root = 0;
 			// file is empty, reserve space for root and occupancy
 			fio -> seekp(0, ios::end);
 			fio -> write((const char *) &root, sizeof(root));
