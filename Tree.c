@@ -122,7 +122,48 @@ unsigned long Tree<Whatever> :: Remove (Whatever & element) {
 template <class Whatever>
 void TNode<Whatever> :: SetHeightAndBalance (fstream * fio,
 	offset & PositionInParent) {
-	/* YOUR CODE GOES HERE */
+	if(Tree<Whatever> :: debug) { // debug for updating bal and height
+		cerr << TREENUM << tree_count << UPDATE << (const char *)(data)
+				<< "]\n";
+	}
+
+	if (left && !right) { // if left child exists but no right child
+		// height and balance is one plus the height of the left child
+		height = (left -> height) + 1;
+		balance = (left -> height) + 1;
+
+	} else if (!left && right) { // if right child exists, but no left
+		balance = -1 - (right -> height);
+		
+		// height is one more of right's height
+		height = (right -> height) + 1;
+
+	} else if (left && right) { // if both children exist
+
+		// if right has higher height than left
+		if ((right -> height) > (left -> height)) { 
+			height = (right -> height) + 1;
+		
+		// height is one more of that of the taller child
+		} else { // if left child is higher than right
+			height = (left -> height) + 1; 
+		}
+
+		// balance is left child's height minus right child's height
+		balance = (left -> height) - (right -> height);
+	} else if (!left && !right) { // if both children don't exist
+		balance = 0; // set balance and height to 0.
+		height = 0;
+	}
+	
+	if (abs(balance) > THRESHOLD) { // if balance exceeds threshld
+		// store in temporary node
+		TNode<Whatever> tempNode (data, *this);
+		// remove the node from th tree
+		Remove(*this, PointerInParent, TRUE);
+		// reinsert the node into the tree
+		PointerInParent -> Insert(tempNode.data, PointerInParent);
+	}		 
 }
 
 template <class Whatever>
@@ -175,6 +216,7 @@ unsigned long TNode<Whatever> :: Insert (Whatever & element, fstream * fio,
 
 		} else { 
 			TNode<Whatever> LeftNode(element, fio, occupancy); // recursive
+			cerr << "position" << LeftNode.this_position;
 			left = LeftNode.this_position;
 		}
 	}
@@ -195,6 +237,9 @@ void TNode<Whatever> :: Read (const offset & position, fstream * fio) {
 	fio -> read ((char*)this, sizeof(TNode<Whatever>));
 	
 	Tree<Whatever>:: IncrementCost();	
+	if (Tree<Whatever> :: debug_on) {
+		cerr<< COST_READ << (const char*)data << "]\n";
+	}
 }
 
 // tnode constructor for reading
@@ -219,7 +264,10 @@ void TNode<Whatever> :: Write (fstream * fio) const {
 	fio -> seekp(this_position);
 	fio -> write((const char *)this, sizeof(TNode<Whatever>));
 
-	Tree<Whatever>:: IncrementCost();	
+	Tree<Whatever>:: IncrementCost();
+	if (Tree<Whatever> :: debug_on) {
+		cerr<< COST_WRITE << (const char*)data << "]\n";
+	}
 }
 
 template <class Whatever>
@@ -264,6 +312,9 @@ Tree<Whatever> :: ~Tree (void)
 %                the table.
 ***************************************************************************/
 {	
+	if (debug_on) {
+		cerr<< TREE << tree_count << DEALLOCATE;
+	}
 	fio -> seekp(0, ios::beg);
 	fio -> write((const char *) &root, sizeof(root));
 	fio -> write((const char *) &occupancy, sizeof(occupancy));
