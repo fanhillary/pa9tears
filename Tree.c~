@@ -153,48 +153,34 @@ void Tree <Whatever> :: ResetRoot () {
 template <class Whatever>
 unsigned long TNode<Whatever> :: Insert (Whatever & element, fstream * fio,
 	long & occupancy, offset & PositionInParent) {
-/*
-	if (element == data) { // found duplicate
-		if(Tree<Whatever> :: debug) { // debug message for inserting
-			cerr << TREENUM << tree_count << INSERT << (const char *)element <<
-			"]\n";
-		}
 
+	if (element == data) { // found duplicate
 		data = element; // update the previous data with the new element's data
+		TNode<Whatever> TmpNode(element, fio, occupancy);
 	
 	} else if (element > data) { // if element is greater than data, go right
-		if (!right) { // if there is nothing at the right
-
-			if(Tree<Whatever> :: debug) { // debug message for insertion
-				cerr << TREENUM << tree_count << INSERT <<
-				(const char *)element << "]\n";
-			}
-
-			right = new TNode<Whatever>(element, *this); // insert at right
+		if (right) { // if there is nothing at the right
+			TNode<Whatever> RightNode(right, fio); // recursive
+			RightNode.Insert(element, fio, occupancy, right);
 		
 		} else {
-			right -> Insert(element, right); // recursive call to insert
+			TNode<Whatever> RightNode(element, fio, occupancy); // recursive
+			right = RightNode.Insert(element, right); // recursive call to insert
 		}
 
 	} else { // element is less than data, go left
-		if (!left) { // if nothing is at left, insert at left
-
-			if(Tree<Whatever> :: debug) { // debug message for insertion
-				cerr << TREENUM << tree_count << INSERT <<
-				(const char *)element << "]\n";
-			}
-
-			left = new TNode<Whatever>(element, *this); // insert at left
+		if (left) { // if nothing is at left, insert at left
+			TNode<Whatever> LeftNode(left, fio); // recursive
+			LeftNode.Insert(element, fio, occupancy, left);
 
 		} else { 
-			left -> Insert(element, left); // recursive call to insert
+			TNode<Whatever> LeftNode(element, fio, occupancy); // recursive
+			left = LeftNode.this_position;
 		}
 	}
 	
-	SetHeightAndBalance(PointerInParent); // update the height and balance
+	//SetHeightAndBalance(PointerInParent); // update the height and balance
 	return 1;
-
-*/
 }
 
 template <class Whatever>
@@ -223,10 +209,6 @@ TNode<Whatever> :: TNode (Whatever & element, fstream * fio, long & occupancy):
 			data (element), height (0), balance (0), left (0), 
 			right (0) {
 	occupancy++;
-	fio -> seekp(0, ios::beg);
-	fio -> write((const char *) &root, sizeof(root));
-	fio -> write((const char *) &occupancy, sizeof(occupancy));
-
 	fio -> seekp(0, ios::end);
 	this_position = fio -> tellp();
 	Write(fio);
@@ -281,7 +263,8 @@ Tree<Whatever> :: ~Tree (void)
 %                will also delete all the memory of the elements within
 %                the table.
 ***************************************************************************/
-{
+{	
+	fio -> seekp(0, ios::beg);
 	fio -> write((const char *) &root, sizeof(root));
 	fio -> write((const char *) &occupancy, sizeof(occupancy));
 	delete fio;

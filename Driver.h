@@ -47,7 +47,7 @@ using namespace std;
 class UCSDStudent {
 	// declaration of operator << as a friend to give it permission
 	friend ostream & operator << (ostream &, const UCSDStudent &);
-	char name[20]; //the name array of the UCSDStudent
+	char name[16]; //the name array of the UCSDStudent
 	long studentnum; // the number of the UCSDStudent
 
 public:
