@@ -121,49 +121,46 @@ template <class Whatever>
 unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 	fstream * fio, long & occupancy, offset & PositionInParent,
 	long fromSHB) {
-	/*
 	long status = 0; // whether the remove was successful or not
 	bool notReplaced = true; // Whether the TNode was replaced
+	long temp = 0; // ajsdkf;ajk;dsf
 
-	if(Tree<Whatever> :: debug) { // debug message for comparing nodes
-		cerr << TREENUM << tree_count << COMPARE <<
-		(const char *)(elementTNode.data) << AND << 
-		(const char *)(data) << "]\n";
-	}
+	TNode<Whatever> RightNode(right, fio); // recursive
+	TNode<Whatever> LeftNode(left, fio); // recursive
 	
 	if (elementTNode.data == data) { // if the node is found in tree
 		elementTNode.data = data; // set the element to the data
 		
-		if (occupancy > 1) { // there is more Tnodes besides the root
+		if (Tree<Whatever> :: occupancy > 1) { // there is more Tnodes besides the root
 			
 			if (!right && !left) { // if there are no children
-				PointerInParent = NULL;
+				PositionInParent = NULL;
 			
 			// if left child exists but no right
 			} else if (!right && left) {
 				// set the PointerInParent to that node
-				PointerInParent = left; 
+				PositionInParent = left; 
 
 			// right child exists but left doesn't
 			} else if (right && !left) { 
 				// set the PointerInParent to the right child
-				PointerInParent = right; 
+				PositionInParent = right; 
 			
 			} else if (right && left) { // if has two children
 				
 				// replace the node with the proper child
-				left -> ReplaceAndRemoveMax(*this, left); 
+				LeftNode.ReplaceAndRemoveMax(elementTNode, fio, left); 
 				notReplaced = false; // the node is replaced
 			}
 		}
 
 		if (!fromSHB) { // if the function was not called from SHB
-			SetHeightAndBalance(PointerInParent); 
+			SetHeightAndBalance(fio, PositionInParent); 
 		} 
 
-		if (notReplaced) { // if ReplaceAndRemoveMax was not called
-			delete(this); // delete that node
-		}
+		//if (notReplaced) { // if ReplaceAndRemoveMax was not called
+	//		delete(this); // delete that node
+	//	}
 
 		status = 1; // the removal was a success
 
@@ -174,10 +171,10 @@ unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 			status = 0;
 
 		} else { // if there is a right child, recurse on the right 
-			status = right -> Remove(elementTNode, right, FALSE); 
+			status = RightNode.Remove(elementTNode, fio, temp, right, FALSE); 
 
 			if (!fromSHB) { // if the function was not called from SHB
-				SetHeightAndBalance(PointerInParent); 
+				SetHeightAndBalance(fio, PositionInParent); 
 			} 
 		}
 
@@ -187,21 +184,19 @@ unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 			status = 0;
 
 		} else { // if left child exists, recurse on the left child.
-			status = left -> Remove(elementTNode, left, FALSE); // recursive call to insert
+			status = LeftNode.Remove(elementTNode, fio, temp, left, FALSE); // recursive call to insert
 
 			if (!fromSHB) { // if function not from SHB, call SHB
-				SetHeightAndBalance(PointerInParent);
+				SetHeightAndBalance(fio, PositionInParent);
 			} 
 		}
 	}
 	
 	return status; // return if success or failure
-	*/
 }
 	
 template <class Whatever>
 unsigned long Tree<Whatever> :: Remove (Whatever & element) {
-	/*
 	IncrementOperation();
 	long status = 0; // whether the removal is a success or not
 
@@ -209,58 +204,70 @@ unsigned long Tree<Whatever> :: Remove (Whatever & element) {
 		return 0;
 
 	} else { // if there is something in the tree
+		TNode<Whatever> tempNode (element);
+		
+		// remove the node from th tree
+		status = tempNode.Remove(tempNode, fio, occupancy, root, FALSE);
+		
+		element = tempNode.data; // update the previous data with the new element's data
+		
+		/*
 		TNode<Whatever> tempNode (element, *this); // create a tempNode
 		status = root -> Remove(tempNode, root, FALSE); // delete the node
 		element = tempNode.data; // save the element's data
+		*/
 	}
 
     return status; // return whether the removal was a success
-	*/
 }
 
 template <class Whatever>
 void TNode<Whatever> :: SetHeightAndBalance (fstream * fio,
-	offset & PositionInParent) {
-	/*
+	offset & PositionInParent) {	
+	TNode<Whatever> RightNode(right, fio); // recursive
+	TNode<Whatever> LeftNode(left, fio); // recursive
+
 	if (left && !right) { // if left child exists but no right child
 		// height and balance is one plus the height of the left child
-		height = (left -> height) + 1;
-		balance = (left -> height) + 1;
+		height = LeftNode.height + 1;
+		balance = LeftNode.height + 1;
 
 	} else if (!left && right) { // if right child exists, but no left
-		balance = -1 - (right -> height);
+		balance = -1 - RightNode.height;
 		
 		// height is one more of right's height
-		height = (right -> height) + 1;
+		height = RightNode.height + 1;
 
 	} else if (left && right) { // if both children exist
 
 		// if right has higher height than left
-		if ((right -> height) > (left -> height)) { 
-			height = (right -> height) + 1;
+		if ((RightNode.height) > (LeftNode.height)) { 
+			height = RightNode.height + 1;
 		
 		// height is one more of that of the taller child
 		} else { // if left child is higher than right
-			height = (left -> height) + 1; 
+			height = LeftNode.height + 1; 
 		}
 
 		// balance is left child's height minus right child's height
-		balance = (left -> height) - (right -> height);
+		balance = (LeftNode.height) - (RightNode.height);
 	} else if (!left && !right) { // if both children don't exist
 		balance = 0; // set balance and height to 0.
 		height = 0;
 	}
 	
 	if (abs(balance) > THRESHOLD) { // if balance exceeds threshld
+		long temp = 0;
 		// store in temporary node
 		TNode<Whatever> tempNode (data);
 		// remove the node from th tree
-		Remove(tempNode, fio, occupancy, PositionInParent, TRUE);
+		Remove(tempNode, fio, temp, PositionInParent, TRUE);
 		// reinsert the node into the tree
 		TNode<Whatever> newNode(PositionInParent, fio);
-		newNode.Insert(tempNode.data, fio, occupancy, PositionInParent);
+		newNode.Insert(tempNode.data, fio, temp, PositionInParent);
 	}		 
-	*/
+	
+	Write(fio);
 }
 
 template <class Whatever>
@@ -288,7 +295,34 @@ void Tree <Whatever> :: ResetRoot () {
 	fio -> seekp(0, ios:: end);
 	root = fio -> tellp();
 }
+/*
+template <class Whatever>
+unsigned long TNode<Whatever> :: Lookup(Whatever & element) const {
+ Hw8 tnode lookup
+	if (element == data) { // the element is found
+		element = data; // set the element to the data
+		return 1; // element is in the tree
 
+	} else if (element > data) { // element is greater than the current data
+		if (!right) { // if nothing is at the right, not in tree
+			return 0;
+
+		} else { // if right exists, recurse using right node
+			return (right -> Lookup(element)); 
+		}
+
+	} else { // element is less than current data, want to go left
+		if (!left) { // if no left exists, not in tree
+			return 0;
+
+		} else { 
+			return (left -> Lookup(element)); // recursive call to lookup 
+		}
+	}
+	return 0; // failure to find the element in the tree
+
+}
+*/
 template <class Whatever>
 unsigned long TNode<Whatever> :: Insert (Whatever & element, fstream * fio,
 	long & occupancy, offset & PositionInParent) {
@@ -318,7 +352,7 @@ unsigned long TNode<Whatever> :: Insert (Whatever & element, fstream * fio,
 		}
 	}
 	
-	//SetHeightAndBalance(PointerInParent); // update the height and balance
+	SetHeightAndBalance(fio, PositionInParent); // update the height and balance
 	return 1;
 }
 
@@ -328,35 +362,10 @@ unsigned long Tree<Whatever> :: Lookup (Whatever & element) const {
 	/* hw8 tree lookup
 	if (occupancy == 0) { // if there is nothing in the tree, the lookkup fails
 		return 0;
-
 	} else { // if there is something in the tree
 		return (root -> Lookup(element)); // call TNode's lookup to find it
 	}
 	*/
-
-/* Hw8 tnode lookup
-	if (element == data) { // the element is found
-		element = data; // set the element to the data
-		return 1; // element is in the tree
-
-	} else if (element > data) { // element is greater than the current data
-		if (!right) { // if nothing is at the right, not in tree
-			return 0;
-
-		} else { // if right exists, recurse using right node
-			return (right -> Lookup(element)); 
-		}
-
-	} else { // element is less than current data, want to go left
-		if (!left) { // if no left exists, not in tree
-			return 0;
-
-		} else { 
-			return (left -> Lookup(element)); // recursive call to lookup 
-		}
-	}
-	return 0; // failure to find the element in the tree
-*/
 }
 
 template <class Whatever>
