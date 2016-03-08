@@ -81,9 +81,6 @@ template <class Whatever>
 unsigned long Tree<Whatever> :: Insert (Whatever & element) {
 	IncrementOperation();
 	long status;
-
-	// MAGIC NUMBERRRRRR how do I tell if the root is empty? If it returns
-	// 00000000, how do I check the equivalence?
 	
 	if(element) {
 		status = FALSE;
@@ -121,43 +118,46 @@ template <class Whatever>
 unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 	fstream * fio, long & occupancy, offset & PositionInParent,
 	long fromSHB) {
-	/*
 	long status = 0; // whether the remove was successful or not
 	bool notReplaced = true; // Whether the TNode was replaced
+	long temp = 0; // ajsdkf;ajk;dsf
 
+	TNode<Whatever> RightNode(right, fio); // recursive
+	TNode<Whatever> LeftNode(left, fio); // recursive
+	
 	if (elementTNode.data == data) { // if the node is found in tree
 		elementTNode.data = data; // set the element to the data
 		
 		if (occupancy > 1) { // there is more Tnodes besides the root
 			
 			if (!right && !left) { // if there are no children
-				PointerInParent = NULL;
+				PositionInParent = NULL;
 			
 			// if left child exists but no right
 			} else if (!right && left) {
 				// set the PointerInParent to that node
-				PointerInParent = left; 
+				PositionInParent = left; 
 
 			// right child exists but left doesn't
 			} else if (right && !left) { 
 				// set the PointerInParent to the right child
-				PointerInParent = right; 
+				PositionInParent = right; 
 			
 			} else if (right && left) { // if has two children
 				
 				// replace the node with the proper child
-				left -> ReplaceAndRemoveMax(*this, left); 
+				LeftNode.ReplaceAndRemoveMax(*this, fio, left); 
 				notReplaced = false; // the node is replaced
 			}
 		}
 
 		if (!fromSHB) { // if the function was not called from SHB
-			SetHeightAndBalance(PointerInParent); 
+			SetHeightAndBalance(fio, PositionInParent); 
 		} 
 
-		if (notReplaced) { // if ReplaceAndRemoveMax was not called
-			delete(this); // delete that node
-		}
+		//if (notReplaced) { // if ReplaceAndRemoveMax was not called
+	//		delete(this); // delete that node
+	//	}
 
 		status = 1; // the removal was a success
 
@@ -168,10 +168,10 @@ unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 			status = 0;
 
 		} else { // if there is a right child, recurse on the right 
-			status = right -> Remove(elementTNode, right, FALSE); 
+			status = RightNode.Remove(elementTNode, fio, temp, right, FALSE); 
 
 			if (!fromSHB) { // if the function was not called from SHB
-				SetHeightAndBalance(PointerInParent); 
+				SetHeightAndBalance(fio, PositionInParent); 
 			} 
 		}
 
@@ -181,17 +181,15 @@ unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 			status = 0;
 
 		} else { // if left child exists, recurse on the left child.
-			status = left -> Remove(elementTNode, left, FALSE); // recursive call to insert
+			status = LeftNode.Remove(elementTNode, fio, temp, left, FALSE); // recursive call to insert
 
 			if (!fromSHB) { // if function not from SHB, call SHB
-				SetHeightAndBalance(PointerInParent);
+				SetHeightAndBalance(fio, PositionInParent);
 			} 
 		}
 	}
 	
 	return status; // return if success or failure
-	*/
-	return 1;
 }
 	
 template <class Whatever>
@@ -204,11 +202,17 @@ unsigned long Tree<Whatever> :: Remove (Whatever & element) {
 
 	} else { // if there is something in the tree
 		TNode<Whatever> tempNode (element);
+		TNode<Whatever> readRootNode(root, fio);
 		
 		// remove the node from th tree
-		status = tempNode.Remove(tempNode, fio, occupancy, root, FALSE);
+		status = readRootNode.Remove(tempNode, fio, occupancy, root, FALSE);
 		
 		element = tempNode.data; // update the previous data with the new element's data
+		occupancy--;
+
+		if (occupancy == 0) {
+			resetRoot();
+		}
 		
 		/*
 		TNode<Whatever> tempNode (element, *this); // create a tempNode
@@ -294,10 +298,10 @@ void Tree <Whatever> :: ResetRoot () {
 	fio -> seekp(0, ios:: end);
 	root = fio -> tellp();
 }
-/*
+
+
 template <class Whatever>
 unsigned long TNode<Whatever> :: Lookup(Whatever & element) const {
- Hw8 tnode lookup
 	if (element == data) { // the element is found
 		element = data; // set the element to the data
 		return 1; // element is in the tree
@@ -311,8 +315,9 @@ unsigned long TNode<Whatever> :: Lookup(Whatever & element) const {
 		}
 
 	} else { // element is less than current data, want to go left
-		if (!left) { // if no left exists, not in tree
-			return 0;
+-+
+if (!left) { // if no left exists, not in tree
+
 
 		} else { 
 			return (left -> Lookup(element)); // recursive call to lookup 
@@ -321,7 +326,7 @@ unsigned long TNode<Whatever> :: Lookup(Whatever & element) const {
 	return 0; // failure to find the element in the tree
 
 }
-*/
+
 template <class Whatever>
 unsigned long TNode<Whatever> :: Insert (Whatever & element, fstream * fio,
 	long & occupancy, offset & PositionInParent) {
@@ -365,6 +370,7 @@ unsigned long Tree<Whatever> :: Lookup (Whatever & element) const {
 		return (root -> Lookup(element)); // call TNode's lookup to find it
 	}
 	*/
+	return 1;
 }
 
 template <class Whatever>

@@ -81,9 +81,6 @@ template <class Whatever>
 unsigned long Tree<Whatever> :: Insert (Whatever & element) {
 	IncrementOperation();
 	long status;
-
-	// MAGIC NUMBERRRRRR how do I tell if the root is empty? If it returns
-	// 00000000, how do I check the equivalence?
 	
 	if(element) {
 		status = FALSE;
@@ -131,7 +128,7 @@ unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 	if (elementTNode.data == data) { // if the node is found in tree
 		elementTNode.data = data; // set the element to the data
 		
-		if (Tree<Whatever> :: occupancy > 1) { // there is more Tnodes besides the root
+		if (occupancy > 1) { // there is more Tnodes besides the root
 			
 			if (!right && !left) { // if there are no children
 				PositionInParent = NULL;
@@ -149,7 +146,7 @@ unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 			} else if (right && left) { // if has two children
 				
 				// replace the node with the proper child
-				LeftNode.ReplaceAndRemoveMax(elementTNode, fio, left); 
+				LeftNode.ReplaceAndRemoveMax(*this, fio, left); 
 				notReplaced = false; // the node is replaced
 			}
 		}
@@ -205,11 +202,17 @@ unsigned long Tree<Whatever> :: Remove (Whatever & element) {
 
 	} else { // if there is something in the tree
 		TNode<Whatever> tempNode (element);
+		TNode<Whatever> readRootNode(root, fio);
 		
 		// remove the node from th tree
-		status = tempNode.Remove(tempNode, fio, occupancy, root, FALSE);
+		status = readRootNode.Remove(tempNode, fio, occupancy, root, FALSE);
 		
 		element = tempNode.data; // update the previous data with the new element's data
+		occupancy--;
+
+		if (occupancy == 0) {
+			resetRoot();
+		}
 		
 		/*
 		TNode<Whatever> tempNode (element, *this); // create a tempNode
@@ -295,10 +298,10 @@ void Tree <Whatever> :: ResetRoot () {
 	fio -> seekp(0, ios:: end);
 	root = fio -> tellp();
 }
-/*
+
+
 template <class Whatever>
 unsigned long TNode<Whatever> :: Lookup(Whatever & element) const {
- Hw8 tnode lookup
 	if (element == data) { // the element is found
 		element = data; // set the element to the data
 		return 1; // element is in the tree
@@ -312,8 +315,9 @@ unsigned long TNode<Whatever> :: Lookup(Whatever & element) const {
 		}
 
 	} else { // element is less than current data, want to go left
-		if (!left) { // if no left exists, not in tree
-			return 0;
+-+
+if (!left) { // if no left exists, not in tree
+
 
 		} else { 
 			return (left -> Lookup(element)); // recursive call to lookup 
@@ -322,7 +326,7 @@ unsigned long TNode<Whatever> :: Lookup(Whatever & element) const {
 	return 0; // failure to find the element in the tree
 
 }
-*/
+
 template <class Whatever>
 unsigned long TNode<Whatever> :: Insert (Whatever & element, fstream * fio,
 	long & occupancy, offset & PositionInParent) {
@@ -359,13 +363,12 @@ unsigned long TNode<Whatever> :: Insert (Whatever & element, fstream * fio,
 template <class Whatever>
 unsigned long Tree<Whatever> :: Lookup (Whatever & element) const {
 	IncrementOperation();
-	/* hw8 tree lookup
 	if (occupancy == 0) { // if there is nothing in the tree, the lookkup fails
 		return 0;
 	} else { // if there is something in the tree
 		return (root -> Lookup(element)); // call TNode's lookup to find it
 	}
-	*/
+	return 1;
 }
 
 template <class Whatever>
