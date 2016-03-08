@@ -165,7 +165,7 @@ unsigned long TNode<Whatever> :: Insert (Whatever & element, fstream * fio,
 		
 		} else {
 			TNode<Whatever> RightNode(element, fio, occupancy); // recursive
-			right = RightNode.Insert(element, right); // recursive call to insert
+			right = RightNode.this_position;
 		}
 
 	} else { // element is less than data, go left
@@ -175,6 +175,7 @@ unsigned long TNode<Whatever> :: Insert (Whatever & element, fstream * fio,
 
 		} else { 
 			TNode<Whatever> LeftNode(element, fio, occupancy); // recursive
+			cerr << "position" << LeftNode.this_position;
 			left = LeftNode.this_position;
 		}
 	}
@@ -195,6 +196,9 @@ void TNode<Whatever> :: Read (const offset & position, fstream * fio) {
 	fio -> read ((char*)this, sizeof(TNode<Whatever>));
 	
 	Tree<Whatever>:: IncrementCost();	
+	if (Tree<Whatever> :: debug_on) {
+		cerr<< COST_READ << (const char*)data << "]\n";
+	}
 }
 
 // tnode constructor for reading
@@ -219,7 +223,10 @@ void TNode<Whatever> :: Write (fstream * fio) const {
 	fio -> seekp(this_position);
 	fio -> write((const char *)this, sizeof(TNode<Whatever>));
 
-	Tree<Whatever>:: IncrementCost();	
+	Tree<Whatever>:: IncrementCost();
+	if (Tree<Whatever> :: debug_on) {
+		cerr<< COST_WRITE << (const char*)data << "]\n";
+	}
 }
 
 template <class Whatever>
@@ -264,6 +271,9 @@ Tree<Whatever> :: ~Tree (void)
 %                the table.
 ***************************************************************************/
 {	
+	if (debug_on) {
+		cerr<< TREE << tree_count << DEALLOCATE;
+	}
 	fio -> seekp(0, ios::beg);
 	fio -> write((const char *) &root, sizeof(root));
 	fio -> write((const char *) &occupancy, sizeof(occupancy));
