@@ -56,6 +56,7 @@ struct  TNode {
 	
 	unsigned long Insert (Whatever &, fstream *, long &, offset &);
 	// optional recursive Lookup declaration would go here
+	unsigned long Lookup (Whatever &, fstream *, offset &);
 	void Read (const offset &, fstream *);	// read node from disk
 	unsigned long Remove (TNode<Whatever> &, fstream *, long &, offset &,
 		long fromSHB = FALSE);
@@ -210,14 +211,10 @@ unsigned long Tree<Whatever> :: Remove (Whatever & element) {
 		element = tempNode.data; // update the previous data with the new element's data
 		occupancy--;
 
+/*
 		if (occupancy == 0) {
 			resetRoot();
 		}
-		
-		/*
-		TNode<Whatever> tempNode (element, *this); // create a tempNode
-		status = root -> Remove(tempNode, root, FALSE); // delete the node
-		element = tempNode.data; // save the element's data
 		*/
 	}
 
@@ -299,34 +296,6 @@ void Tree <Whatever> :: ResetRoot () {
 	root = fio -> tellp();
 }
 
-
-template <class Whatever>
-unsigned long TNode<Whatever> :: Lookup(Whatever & element) const {
-	if (element == data) { // the element is found
-		element = data; // set the element to the data
-		return 1; // element is in the tree
-
-	} else if (element > data) { // element is greater than the current data
-		if (!right) { // if nothing is at the right, not in tree
-			return 0;
-
-		} else { // if right exists, recurse using right node
-			return (right -> Lookup(element)); 
-		}
-
-	} else { // element is less than current data, want to go left
--+
-if (!left) { // if no left exists, not in tree
-
-
-		} else { 
-			return (left -> Lookup(element)); // recursive call to lookup 
-		}
-	}
-	return 0; // failure to find the element in the tree
-
-}
-
 template <class Whatever>
 unsigned long TNode<Whatever> :: Insert (Whatever & element, fstream * fio,
 	long & occupancy, offset & PositionInParent) {
@@ -361,12 +330,41 @@ unsigned long TNode<Whatever> :: Insert (Whatever & element, fstream * fio,
 }
 
 template <class Whatever>
+unsigned long TNode<Whatever> :: Lookup (Whatever & element, fstream * fio,
+	offset & PositionInParent) {
+	if (element == data) { // the element is found
+		element = data; // set the element to the data
+		return 1; // element is in the tree
+
+	} else if (element > data) { // element is greater than the current data
+		if (!right) { // if nothing is at the right, not in tree
+			return 0;
+
+		} else { // if right exists, recurse using right node
+			TNode<Whatever> RightNode(right, fio); // recursive
+			RightNode.Lookup(element, fio, right);
+		}
+
+	} else { // element is less than current data, want to go left
+		if (!left) { // if no left exists, not in tree
+			return 0;
+		} else { 
+			TNode<Whatever> LeftNode(left, fio); // recursive
+			LeftNode.Lookup(element, fio, left);
+		}
+	}
+	return 0; // failure to find the element in the tree
+}
+
+template <class Whatever>
 unsigned long Tree<Whatever> :: Lookup (Whatever & element) const {
 	IncrementOperation();
+	
 	if (occupancy == 0) { // if there is nothing in the tree, the lookkup fails
 		return 0;
 	} else { // if there is something in the tree
-		return (root -> Lookup(element)); // call TNode's lookup to find it
+		TNode<Whatever> readRootNode (root, fio);
+		return readRootNode.Lookup(element, fio, root);
 	}
 	return 1;
 }
