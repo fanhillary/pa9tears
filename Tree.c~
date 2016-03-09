@@ -122,14 +122,6 @@ unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 	long status = 0; // whether the remove was successful or not
 	bool notReplaced = true; // Whether the TNode was replaced
 	long temp = 0; // ajsdkf;ajk;dsf
-
-	if (left) {
-		TNode<Whatever> LeftNode(left, fio); // recursive
-	}
-
-	if (right) {
-		TNode<Whatever> RightNode(right, fio); // recursive
-	}
 	
 	if (elementTNode.data == data) { // if the node is found in tree
 		elementTNode.data = data; // set the element to the data
@@ -152,13 +144,18 @@ unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 			} else if (right && left) { // if has two children
 				
 				// replace the node with the proper child
+				TNode<Whatever> LeftNode(left, fio); // recursive
 				LeftNode.ReplaceAndRemoveMax(*this, fio, left); 
 				notReplaced = false; // the node is replaced
 			}
+			right = 0;
+			left = 0;
 		}
 
 		if (!fromSHB) { // if the function was not called from SHB
-			SetHeightAndBalance(fio, PositionInParent); 
+			SetHeightAndBalance(fio, PositionInParent);
+
+			//SetHeightAndBalance(fio, PositionInParent, false);
 		} 
 
 		//if (notReplaced) { // if ReplaceAndRemoveMax was not called
@@ -174,6 +171,7 @@ unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 			status = 0;
 
 		} else { // if there is a right child, recurse on the right 
+			TNode<Whatever> RightNode(right, fio); // recursive
 			status = RightNode.Remove(elementTNode, fio, temp, right, FALSE); 
 
 			if (!fromSHB) { // if the function was not called from SHB
@@ -187,6 +185,7 @@ unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 			status = 0;
 
 		} else { // if left child exists, recurse on the left child.
+			TNode<Whatever> LeftNode(left, fio); // recursive
 			status = LeftNode.Remove(elementTNode, fio, temp, left, FALSE); // recursive call to insert
 
 			if (!fromSHB) { // if function not from SHB, call SHB
@@ -227,6 +226,7 @@ unsigned long Tree<Whatever> :: Remove (Whatever & element) {
 template <class Whatever>
 void TNode<Whatever> :: SetHeightAndBalance (fstream * fio,
 	offset & PositionInParent) {
+	// bool notFromRem =1 as last param
 	long leftHeight = -1;
 	long rightHeight = -1;
 
@@ -252,7 +252,9 @@ void TNode<Whatever> :: SetHeightAndBalance (fstream * fio,
 		newNode.Insert(tempNode.data, fio, temp, PositionInParent);
 	}		 
 	
-	Write(fio);
+//	if (notFromRem) {
+		Write(fio);
+//	}
 }
 
 template <class Whatever>

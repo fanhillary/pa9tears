@@ -148,10 +148,14 @@ unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 				LeftNode.ReplaceAndRemoveMax(*this, fio, left); 
 				notReplaced = false; // the node is replaced
 			}
+			//right = 0;
+			//left = 0;
 		}
 
 		if (!fromSHB) { // if the function was not called from SHB
-			SetHeightAndBalance(fio, PositionInParent); 
+			SetHeightAndBalance(fio, PositionInParent);
+
+			//SetHeightAndBalance(fio, PositionInParent, false);
 		} 
 
 		//if (notReplaced) { // if ReplaceAndRemoveMax was not called
@@ -222,6 +226,7 @@ unsigned long Tree<Whatever> :: Remove (Whatever & element) {
 template <class Whatever>
 void TNode<Whatever> :: SetHeightAndBalance (fstream * fio,
 	offset & PositionInParent) {
+	// bool notFromRem =1 as last param
 	long leftHeight = -1;
 	long rightHeight = -1;
 
@@ -247,7 +252,9 @@ void TNode<Whatever> :: SetHeightAndBalance (fstream * fio,
 		newNode.Insert(tempNode.data, fio, temp, PositionInParent);
 	}		 
 	
-	Write(fio);
+//	if (notFromRem) {
+		Write(fio);
+//	}
 }
 
 template <class Whatever>
