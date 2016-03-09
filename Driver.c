@@ -43,6 +43,7 @@ int main (int argc, char * const * argv) {
 
         
 		while (cin) {
+			/*
 			if (*is == EOF) {
 				if (*is != cin) { // if already reading from file
 					is = &cin; // switch to cin to read from keyboard
@@ -50,6 +51,7 @@ int main (int argc, char * const * argv) {
 					break;
 				}
 			} 
+			*/
 			command = NULL;         // reset command each time in loop
 			*os << "Please enter a command ((i)nsert, "
 					<< "(l)ookup, (r)emove, (w)rite):  ";
@@ -106,6 +108,7 @@ int main (int argc, char * const * argv) {
 				}
 
 				case 'f': {
+				
 					*os << "Please enter file name for commands: ";
 					*is >> buffer;
 

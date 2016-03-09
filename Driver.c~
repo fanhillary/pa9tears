@@ -43,7 +43,7 @@ int main (int argc, char * const * argv) {
 
         
 		while (cin) {
-			if (cin == EOF) {
+			if (*is == EOF) {
 				if (*is != cin) { // if already reading from file
 					is = &cin; // switch to cin to read from keyboard
 				} else {
