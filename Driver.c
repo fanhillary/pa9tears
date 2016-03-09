@@ -94,6 +94,7 @@ int main (int argc, char * const * argv) {
                 case 'w':
                         ST.Write (cout << "The Symbol Table contains:\n");
 						/*
+				
 				case 'f':
 				    is = new ifstream(buffer);	
 					

@@ -37,7 +37,7 @@ int main (int argc, char * const * argv) {
                 }       
         }
         
-        SymTab<UCSDStudent> ST("Driver.datafile");
+        SymTab<UCSDStudent> ST("Driver.datafile"); // reads from disk9 disk now
         ST.Write (cout << "Initial Symbol Table:\n" );
 
         while (cin) {
