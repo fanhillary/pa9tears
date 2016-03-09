@@ -83,7 +83,7 @@ unsigned long Tree<Whatever> :: Insert (Whatever & element) {
 	IncrementOperation();
 	long status;
 	
-	if(element) {
+	if(!element) {
 		status = FALSE;
 	} 
 
@@ -121,13 +121,10 @@ unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 	long fromSHB) {
 	long status = 0; // whether the remove was successful or not
 	bool notReplaced = true; // Whether the TNode was replaced
-	long temp = 0; // ajsdkf;ajk;dsf
 	
 	if (elementTNode.data == data) { // if the node is found in tree
 		elementTNode.data = data; // set the element to the data
 		
-		if (occupancy > 1) { // there is more Tnodes besides the root
-			
 			if (!right && !left) { // if there are no children
 				PositionInParent = NULL;
 			
@@ -148,9 +145,8 @@ unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 				LeftNode.ReplaceAndRemoveMax(*this, fio, left); 
 				notReplaced = false; // the node is replaced
 			}
-			right = 0;
-			left = 0;
-		}
+			//right = 0;
+			//left = 0;
 
 		if (!fromSHB) { // if the function was not called from SHB
 			SetHeightAndBalance(fio, PositionInParent);
@@ -172,7 +168,7 @@ unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 
 		} else { // if there is a right child, recurse on the right 
 			TNode<Whatever> RightNode(right, fio); // recursive
-			status = RightNode.Remove(elementTNode, fio, temp, right, FALSE); 
+			status = RightNode.Remove(elementTNode, fio, occupancy, right, FALSE); 
 
 			if (!fromSHB) { // if the function was not called from SHB
 				SetHeightAndBalance(fio, PositionInParent); 
@@ -186,7 +182,7 @@ unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 
 		} else { // if left child exists, recurse on the left child.
 			TNode<Whatever> LeftNode(left, fio); // recursive
-			status = LeftNode.Remove(elementTNode, fio, temp, left, FALSE); // recursive call to insert
+			status = LeftNode.Remove(elementTNode, fio, occupancy, left, FALSE); // recursive call to insert
 
 			if (!fromSHB) { // if function not from SHB, call SHB
 				SetHeightAndBalance(fio, PositionInParent);
@@ -235,18 +231,21 @@ void TNode<Whatever> :: SetHeightAndBalance (fstream * fio,
 		leftHeight = LeftNode.height;
 	}
 	if (right) {
-		TNode<Whatever> RightNode(right, fio); // recursive
-		rightHeight = RightNode.height;
+		TNode<Whatever> RightNode(right, fio); // read right node
+		rightHeight = RightNode.height; 
 	} 
 	balance = leftHeight - rightHeight;
 	height = leftHeight>rightHeight? leftHeight+1 : rightHeight+1;
 
 	if (abs(balance) > THRESHOLD) { // if balance exceeds threshld
 		long temp = 0;
+		
 		// store in temporary node
 		TNode<Whatever> tempNode (data);
+		TNode<Whatever> readRootNode(root, fio);
+
 		// remove the node from th tree
-		Remove(tempNode, fio, temp, PositionInParent, TRUE);
+		readRootNode.Remove(tempNode, fio, temp, PositionInParent, TRUE);
 		// reinsert the node into the tree
 		TNode<Whatever> newNode(PositionInParent, fio);
 		newNode.Insert(tempNode.data, fio, temp, PositionInParent);
