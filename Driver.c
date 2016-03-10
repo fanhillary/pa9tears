@@ -14,6 +14,8 @@ using namespace std;
 #undef NULL
 #define NULL 0
 #endif
+#define FROM_KEYBOARD 1
+#define FROM_FILE 0
 
 ostream & operator << (ostream & stream, const UCSDStudent & stu) {
         return stream << "name:  " << stu.name
@@ -25,6 +27,7 @@ int main (int argc, char * const * argv) {
         char command;
         long number;
         char option;
+		int readingFrom = FROM_KEYBOARD;
         
 		istream * is = &cin;
 		ostream * os = &cout;
@@ -43,15 +46,17 @@ int main (int argc, char * const * argv) {
 
         
 		while (cin) {
-			/*
-			if (*is == EOF) {
-				if (*is != cin) { // if already reading from file
+			if (!*is) { // EOF
+				if (readingFrom == FROM_FILE) { // is input is from file
 					is = &cin; // switch to cin to read from keyboard
+					os = &cout;
+					readingFrom = FROM_KEYBOARD;
 				} else {
+					delete is;
+					delete os;
 					break;
 				}
 			} 
-			*/
 			command = NULL;         // reset command each time in loop
 			*os << "Please enter a command ((i)nsert, "
 					<< "(l)ookup, (r)emove, (w)rite):  ";
@@ -112,14 +117,16 @@ int main (int argc, char * const * argv) {
 					*os << "Please enter file name for commands: ";
 					*is >> buffer;
 
-					if (*is != cin) { // is input is from file
+					if (readingFrom == FROM_FILE) { // is input is from file
 						delete is; // delete and reset os streams
 						is = &cin;
 						delete os;
 						os = &cout;
+						readingFrom = FROM_KEYBOARD;
 					}
 
 					is = new ifstream(buffer);
+					readingFrom = FROM_FILE;
 					os = new ofstream("/dev/null");
 					break;
 				}
