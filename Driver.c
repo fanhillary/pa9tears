@@ -1,9 +1,11 @@
 /****************************************************************************
 
                                                         Hillary Fan
+                                                        Christine Do
                                                         CSE 12, Winter 2016
                                                         February 16, 2016
                                                         cs12xib
+                                                        cs12xhy
                                 Assignment Nine
 
 File Name:      Driver.c
@@ -128,7 +130,9 @@ int main (int argc, char * const * argv) {
 					ST.Write (cout << "The Symbol Table contains:\n");
 					break;
 				}
-
+                                //
+                                // Read from a file
+                                //
 				case 'f': {
 					*os << "Please enter file name for commands: ";
 					*is >> buffer; // prompt and reading in input
