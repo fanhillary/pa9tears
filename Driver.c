@@ -64,13 +64,13 @@ int main (int argc, char * const * argv) {
 		while (cin) { 
 			if (!*is) { // checks if it reads EOF
 				if (readingFrom == FROM_FILE) { // if input is from file
+					delete is; // delete the is and os pointers
 					is = &cin; // switch to cin to read from keyboard
+					delete os;
 					os = &cout; // switch to cout to output regularly
 					readingFrom = FROM_KEYBOARD; 
 
 				} else {
-					delete is; // delete the is and os pointers
-					delete os;
 					break; // terminate program
 				}
 			} 
@@ -133,19 +133,11 @@ int main (int argc, char * const * argv) {
 					*os << "Please enter file name for commands: ";
 					*is >> buffer; // prompt and reading in input
 
-					// if already reading from file
-					if (readingFrom == FROM_FILE) {
-						delete is; // delete and reset os streams
-						is = &cin; // reassign is to read from keyboard
-						delete os;
-						os = &cout;
-						// signal that reading from keyboard now
-						readingFrom = FROM_KEYBOARD;
-					} else {
+					if (readingFrom == FROM_KEYBOARD) {
 						is = new ifstream(buffer); // start reading from file
-						readingFrom = FROM_FILE;
 						// change output location
 						os = new ofstream("/dev/null");
+						readingFrom = FROM_FILE;
 					}
 					break;
 				}

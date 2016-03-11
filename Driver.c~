@@ -1,3 +1,19 @@
+/****************************************************************************
+
+                                                        Hillary Fan
+                                                        CSE 12, Winter 2016
+                                                        February 16, 2016
+                                                        cs12xib
+                                Assignment Nine
+
+File Name:      Driver.c
+Description:    The program holds the UCSDStudent class that implements all the
+				functions and constructors for the UCSDStudent object. It holds
+				the constructor, destructor, the getname, and it can check if 
+				the objects are equal or greater than other UCSDStudent
+				objects. It also holds the driver that has the prompts to the
+				program.
+**************************************************************************/
 #include <iostream>
 #include <cstdio>
 #include <string>
@@ -48,13 +64,13 @@ int main (int argc, char * const * argv) {
 		while (cin) { 
 			if (!*is) { // checks if it reads EOF
 				if (readingFrom == FROM_FILE) { // if input is from file
+					delete is; // delete the is and os pointers
 					is = &cin; // switch to cin to read from keyboard
+					delete os;
 					os = &cout; // switch to cout to output regularly
 					readingFrom = FROM_KEYBOARD; 
 
 				} else {
-					delete is; // delete the is and os pointers
-					delete os;
 					break; // terminate program
 				}
 			} 
@@ -117,6 +133,7 @@ int main (int argc, char * const * argv) {
 					*os << "Please enter file name for commands: ";
 					*is >> buffer; // prompt and reading in input
 
+/*
 					// if already reading from file
 					if (readingFrom == FROM_FILE) {
 						delete is; // delete and reset os streams
@@ -126,10 +143,12 @@ int main (int argc, char * const * argv) {
 						// signal that reading from keyboard now
 						readingFrom = FROM_KEYBOARD;
 					} else {
+						*/
+					if (readingFrom == FROM_KEYBOARD) {
 						is = new ifstream(buffer); // start reading from file
-						readingFrom = FROM_FILE;
 						// change output location
 						os = new ofstream("/dev/null");
+						readingFrom = FROM_FILE;
 					}
 					break;
 				}
