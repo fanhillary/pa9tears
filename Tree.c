@@ -1,9 +1,11 @@
 /****************************************************************************
 
                                                         Hillary Fan
+                                                        Christine Do
                                                         CSE 12, Winter 2016
                                                         February 16, 2016
                                                         cs12xib
+                                                        cs12xhy
                                 Assignment Nine
 
 File Name:      Tree.c
@@ -636,6 +638,27 @@ unsigned long Tree<Whatever> :: Lookup (Whatever & element) const {
 	return 1;
 }
 
+/***************************************************************************
+% Routine Name : TNode<Whatever> :: Read (public)
+% File :         Tree.c
+% 
+% Description : This function will read a TNode which is present on the
+%				datafile into memory. The TNode is read from position.
+%				The TNode information in the datafile overwrites the current
+%				TNode's data.
+%
+% Parameters descriptions :
+% 
+% name               description
+% ------------------ ------------------------------------------------------
+% position           offset in the datafile corresponding to the position
+%				     of the TNode to be read into memory
+%
+% fio 				 the filestream corresponding to the datafile where the
+% 				     Tree is stored on the disk
+%
+% Result: 			 None.
+***************************************************************************/
 template <class Whatever>
 void TNode<Whatever> :: Read (const offset & position, fstream * fio) {
 	fio -> seekg(position); // move input pointer to proper position
@@ -648,13 +671,49 @@ void TNode<Whatever> :: Read (const offset & position, fstream * fio) {
 	}
 }
 
-// tnode constructor for reading
+/***************************************************************************
+% Routine Name : TNode Constructor for Reading  (public)
+% File :         Tree.c
+% 
+% Description : Called when reading in a new TNode
+%
+% Parameters descriptions :
+% 
+% name               description
+% ------------------ ------------------------------------------------------
+% position           offset in the datafile corresponding to the position
+%				     of the TNode to be read into memory
+%
+% fio 				 the filestream corresponding to the datafile where the
+% 				     Tree is stored on the disk
+%
+% Result: 			 None.
+***************************************************************************/
 template <class Whatever> 
 TNode<Whatever> :: TNode (const offset & position, fstream * fio) {
-	Read(position, fio); // call the read function to read in the TNode
+	// call the read function to read in the TNode
+	Read(position, fio); 
 }
 
-// tnode constructor for writing
+/***************************************************************************
+% Routine Name : TNode Constructor for Reading  (public)
+% File :         Tree.c
+% 
+% Description : Called when writing a new TNode to the disk
+%
+% Parameters descriptions :
+% 
+% name               description
+% ------------------ ------------------------------------------------------
+% element            the data stored in the TNode
+%
+% fio 				 the filestream corresponding to the datafile where the
+% 				     Tree is stored on the disk
+%
+% occupancy			 reference to the occupancy of the tree
+%
+% Result: 			 None.
+***************************************************************************/
 template <class Whatever>
 TNode<Whatever> :: TNode (Whatever & element, fstream * fio, long & occupancy): 
 			data (element), height (0), balance (0), left (0), 
@@ -665,9 +724,27 @@ TNode<Whatever> :: TNode (Whatever & element, fstream * fio, long & occupancy):
 	Write(fio); // write the node to the diskfile
 }
 
+/***************************************************************************
+% Routine Name : TNode<Whatever> :: Write  (public)
+% File :         Tree.c
+% 
+% Description : Writes the current TNode to disk at this_position in the
+% 				datafile
+%
+% Parameters descriptions :
+% 
+% name               description
+% ------------------ ------------------------------------------------------
+% fio 				 the filestream corresponding to the datafile where the
+% 				     Tree is stored on the disk
+%
+% Result: 			 None.
+***************************************************************************/
 template <class Whatever>
 void TNode<Whatever> :: Write (fstream * fio) const {
 	fio -> seekp(this_position); // moves output pointer to proper location
+
+	// Write TNode to disk
 	fio -> write((const char *)this, sizeof(TNode<Whatever>)); 
 
 	Tree<Whatever>:: IncrementCost(); // increment cost of writing
@@ -677,6 +754,24 @@ void TNode<Whatever> :: Write (fstream * fio) const {
 	}
 }
 
+/***************************************************************************
+% Routine Name : Tree Constructor  (public)
+% File :         Tree.c
+% 
+% Description : Allocates the Tree object. Checks the datafile to see if it
+% 				contains Tree data. If it is empty, root and occupancy
+%				fields are written to the file. If there is data in the
+%				datafile, root and occupancy fields are read into memory.
+%
+% Parameters descriptions :
+% 
+% name               description
+% ------------------ ------------------------------------------------------
+% fio 				 the filestream corresponding to the datafile where the
+% 				     Tree is stored on the disk
+%
+% Result: 			 None.
+***************************************************************************/
 template <class Whatever>
 Tree<Whatever> :: Tree (const char * datafile) :
 	fio (new fstream (datafile, ios :: out | ios :: in)) {
