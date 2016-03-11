@@ -140,7 +140,7 @@ struct  TNode {
 ***************************************************************************/
 template <class Whatever>
 void Tree<Whatever> :: Set_Debug_Off(void) {
-	debug_on = 0; // set debug to off.
+	debug_on = 0; // set debug to off
 }
 
 /***************************************************************************
@@ -153,7 +153,7 @@ void Tree<Whatever> :: Set_Debug_Off(void) {
 ***************************************************************************/
 template <class Whatever>
 void Tree<Whatever> :: Set_Debug_On(void) {
-	debug_on = 1; // set debug to on.
+	debug_on = 1; // set debug to on
 }
 
 /***************************************************************************
@@ -175,14 +175,14 @@ void Tree<Whatever> :: Set_Debug_On(void) {
 ******************************************************************************/
 template <class Whatever>
 unsigned long Tree<Whatever> :: Insert (Whatever & element) {
-	IncrementOperation();
-	long status;
+	long status = 0; // whether the insertion is successful or not
+	IncrementOperation(); // Increment the operation count
 	
-	if(!element) {
+	if(!element) { // if there was no element passed in, unsuccessful
 		status = FALSE;
 	} 
 
-	if (occupancy == 0) { // if there is not root, insert new element as root
+	if (occupancy == 0) { // if there is no root, insert new element as root
 		TNode<Whatever> TempNode(element, fio, occupancy); // write in datafile
 		status = TRUE;
 
@@ -208,7 +208,9 @@ unsigned long Tree<Whatever> :: Insert (Whatever & element) {
 % name               description
 % ------------------ ------------------------------------------------------
 % targetTNode       The element to remove and replace in the tree
-% PointerInParent   The pointer from the parent that points at current node
+% fio               The filestream corresponding to datafile where the Tree is
+%					stored on disk
+% PositionInParent  The pointer from the parent that points at current node
 %
 % Result:  A tree with one less node and a different data in the place of the
 %		   removed node.
@@ -216,21 +218,23 @@ unsigned long Tree<Whatever> :: Insert (Whatever & element) {
 template <class Whatever>
 void TNode<Whatever> :: ReplaceAndRemoveMax (TNode<Whatever> & targetTNode, 
 	fstream * fio, offset & PositionInParent) {
-	if(right) {
+	if(right) { // if there are right nodes, recurse to the most right
 		TNode<Whatever> rightNode(right, fio);
 
-		rightNode.ReplaceAndRemoveMax(targetTNode, fio, right);
+		rightNode.ReplaceAndRemoveMax(targetTNode, fio, right); 
 
-		SetHeightAndBalance(fio, PositionInParent);
+		SetHeightAndBalance(fio, PositionInParent); // update balance ad height
 
 	} else {
 		// replace with the max TNode in the left subtree
 		targetTNode.data = data;
 
-		if(left) {
-			PositionInParent = left;
-		} else {
-			PositionInParent = NULL;
+		if(left) { // if there is left child
+			// update the position in parent to the left child 
+			PositionInParent = left; 
+
+		} else { 
+			PositionInParent = NULL; // if no left child, set to null
 		}
 	}
 }
@@ -250,9 +254,12 @@ void TNode<Whatever> :: ReplaceAndRemoveMax (TNode<Whatever> & targetTNode,
 % 
 % name               description
 % ------------------ ------------------------------------------------------
-% elementTNode       The element to look for to remove from the tree.
-% PointerInParent    The pointer from the parent that points at current node
-% fromSHB            Whether the function was called from SetHeightAndBalance
+% elementTNode      The element to look for to remove from the tree.
+% fio               The filestream corresponding to datafile where the Tree is
+%		  			stored on disk
+% occupancy			The current amount nodes the tree holds
+% PositionInParent  The pointer from the parent that points at current node
+% fromSHB           Whether the function was called from SetHeightAndBalance
 %
 % Result: Return 0 for a failure in removal or 1 if the removal was a sucess.
 %         A tree with one less node if the removal was a sucess. 
@@ -262,7 +269,6 @@ unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 	fstream * fio, long & occupancy, offset & PositionInParent,
 	long fromSHB) {
 	long status = 0; // whether the remove was successful or not
-	bool notReplaced = true; // Whether the TNode was replaced
 	
 	if (elementTNode.data == data) { // if the node is found in tree
 		elementTNode.data = data; // set the element to the data
@@ -285,7 +291,6 @@ unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 				// replace the node with the proper child
 				TNode<Whatever> LeftNode(left, fio); // recursive
 				LeftNode.ReplaceAndRemoveMax(*this, fio, left); 
-				notReplaced = false; // the node is replaced
 			}
 			//right = 0;
 			//left = 0;
@@ -294,12 +299,8 @@ unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 			SetHeightAndBalance(fio, PositionInParent);
 			//SetHeightAndBalance(fio, PositionInParent, false);
 		} else {
-			Write(fio);
+			Write(fio); // write to the file
 		}
-
-		//if (notReplaced) { // if ReplaceAndRemoveMax was not called
-	//		delete(this); // delete that node
-	//	}
 
 		status = 1; // the removal was a success
 
@@ -310,7 +311,8 @@ unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 			status = 0;
 
 		} else { // if there is a right child, recurse on the right 
-			TNode<Whatever> RightNode(right, fio); // recursive
+			TNode<Whatever> RightNode(right, fio);
+			// recursive call to remove from the right child
 			status = RightNode.Remove(elementTNode, fio, occupancy, right, FALSE); 
 
 			if (!fromSHB) { // if the function was not called from SHB
@@ -342,7 +344,8 @@ unsigned long TNode<Whatever> :: Remove (TNode<Whatever> & elementTNode,
 % 
 % Description : This function will remove the TNode from the Tree structure.
 %				If there are nodes in the tree, it will create a TNode and
-%				call TNode's remove to delete the node.
+%				call TNode's remove to delete the node. If the tree becomes
+%				empty, it will reset the root.
 %
 % Parameters descriptions :
 % 
@@ -372,7 +375,7 @@ unsigned long Tree<Whatever> :: Remove (Whatever & element) {
 		occupancy--;
 
 		if (occupancy == 0) {
-			ResetRoot();
+			ResetRoot(); // if there is no more nodes, reset the root
 		}
 	}
 
@@ -392,29 +395,30 @@ unsigned long Tree<Whatever> :: Remove (Whatever & element) {
 % 
 % name               description
 % ------------------ ------------------------------------------------------
-% PointerInParent    The pointer from the parent that points at current node
+% fio               The filestream corresponding to datafile where the Tree is
+%					stored on disk
+% PositionInParent  The pointer from the parent that points at current node
 %
 % Result:  Updated height and balance of the current Tnode.
 ***************************************************************************/	
 template <class Whatever>
 void TNode<Whatever> :: SetHeightAndBalance (fstream * fio,
 	offset & PositionInParent) {
-	// bool notFromRem =1 as last param
-	long leftHeight = -1;
-	long rightHeight = -1;
-		long temp = 0;
+	long leftHeight = -1; // the default height of left child
+	long rightHeight = -1; // the default height of right child
+	long temp = 0; // arbitrary value of temp to take place of occupancy
 
-	if (left) {
-		TNode<Whatever> LeftNode(left, fio); // recursive
-		leftHeight = LeftNode.height;
+	if (left) { // if left child exists
+		TNode<Whatever> LeftNode(left, fio);
+		leftHeight = LeftNode.height; // update left child height
 	}
 
-	if (right) {
-		TNode<Whatever> RightNode(right, fio); // read right node
-		rightHeight = RightNode.height; 
+	if (right) { // if right child exists
+	 	TNode<Whatever> RightNode(right, fio); // read right node
+		rightHeight = RightNode.height; // update right child's height
 	} 
 
-	balance = leftHeight - rightHeight;
+	balance = leftHeight - rightHeight; // calculate balance and height
 	height = leftHeight>rightHeight? leftHeight+1 : rightHeight+1;
 
 	if (abs(balance) > THRESHOLD) { // if balance exceeds threshld
@@ -427,35 +431,76 @@ void TNode<Whatever> :: SetHeightAndBalance (fstream * fio,
 		// reinsert the node into the tree
 		TNode<Whatever> newNode(PositionInParent, fio);
 		newNode.Insert(tempNode.data, fio, temp, PositionInParent);
+
 	} else {
-		Write(fio);
+		Write(fio); // Write to fio
 	}
 }
 
+/***************************************************************************
+% Routine Name : Tree<Whatever> :: GetCost()
+% File :         Tree.c
+% 
+% Description : Return the cost of the current processes
+%
+% Result: The cost of the current processes is returned.
+***************************************************************************/
 template <class Whatever>
 long Tree <Whatever> :: GetCost () {
-	return Tree<Whatever>::cost;
+	return Tree<Whatever>::cost; // return the cost of the tree
 }
 
+/***************************************************************************
+% Routine Name : Tree<Whatever> :: GetOperation()
+% File :         Tree.c
+% 
+% Description : Return the number of operations used in the current processes
+%
+% Result: The number of operations used is returned.
+***************************************************************************/
 template <class Whatever>
 long Tree <Whatever> :: GetOperation () {
-	return Tree<Whatever>::operation;
+	return Tree<Whatever>::operation; // get the number of operations used
 }
 
+/***************************************************************************
+% Routine Name : Tree<Whatever> :: IncrementCost()
+% File :         Tree.c
+% 
+% Description : Increment the cost of the current processes
+%
+% Result: The cost of the current processes is incremented.
+***************************************************************************/
 template <class Whatever>
 void Tree <Whatever> :: IncrementCost () {
-	Tree<Whatever>::cost++;
+	Tree<Whatever>::cost++; // increment the cost of the tree
 }
 
+/***************************************************************************
+% Routine Name : Tree<Whatever> :: GetCost()
+% File :         Tree.c
+% 
+% Description : Increment the cost of the current processes
+%
+% Result: The number of operations used is incremented.
+***************************************************************************/
 template <class Whatever>
 void Tree <Whatever> :: IncrementOperation () {
-	Tree<Whatever>::operation++;
+	Tree<Whatever>::operation++; // increment operations used
 }
 
+/***************************************************************************
+% Routine Name : Tree<Whatever> :: ResetRoot()
+% File :         Tree.c
+% 
+% Description : Reset the root back to the end of the file.
+%
+% Result: The root is reset to the next available diskfile space.
+***************************************************************************/
 template <class Whatever>
 void Tree <Whatever> :: ResetRoot () {
-	fio -> seekp(0, ios:: end);
-	root = fio -> tellp();
+	fio -> seekp(0, ios:: end); // move output PointerInParent to end of file
+	root = fio -> tellp(); // update root to that location
 }
 
 
@@ -473,8 +518,11 @@ void Tree <Whatever> :: ResetRoot () {
 % 
 % name               description
 % ------------------ ------------------------------------------------------
-% element            The element to insert into tree.
-% PointerInParent    The pointer from the parent to get to the current TNode.
+% element           The element to insert into tree.
+% fio               The filestream corresponding to datafile where the Tree is
+%					stored on disk
+% occupancy			The current amount nodes the tree holds
+% PositionInParent  The pointer from the parent that points at current node
 %
 % Result: A new TNode inserted into the tree.
 ***************************************************************************/
@@ -486,23 +534,25 @@ unsigned long TNode<Whatever> :: Insert (Whatever & element, fstream * fio,
 		data = element; // update the previous data with the new element's data
 	
 	} else if (element > data) { // if element is greater than data, go right
+
 		if (right) { // if there is nothing at the right
-			TNode<Whatever> RightNode(right, fio); // recursive
+			TNode<Whatever> RightNode(right, fio);
+			// insert as new right child
 			RightNode.Insert(element, fio, occupancy, right);
 		
 		} else {
-			TNode<Whatever> RightNode(element, fio, occupancy); // recursive
-			right = RightNode.this_position;
+			TNode<Whatever> RightNode(element, fio, occupancy);
+			right = RightNode.this_position; // update the right on the file
 		}
 
 	} else { // element is less than data, go left
 		if (left) { // if nothing is at left, insert at left
-			TNode<Whatever> LeftNode(left, fio); // recursive
+			TNode<Whatever> LeftNode(left, fio); 
 			LeftNode.Insert(element, fio, occupancy, left);
 
 		} else { 
-			TNode<Whatever> LeftNode(element, fio, occupancy); // recursive
-			left = LeftNode.this_position;
+			TNode<Whatever> LeftNode(element, fio, occupancy);
+			left = LeftNode.this_position; // update the right on the file
 		}
 	}
 	
@@ -523,6 +573,8 @@ unsigned long TNode<Whatever> :: Insert (Whatever & element, fstream * fio,
 % name               description
 % ------------------ ------------------------------------------------------
 % element			 The element the user wants to lookup.
+% fio               The filestream corresponding to datafile where the Tree is
+%					stored on disk
 %
 % Result:  Retursn whether the element is found in the tree or not..
 ***************************************************************************/
@@ -537,7 +589,8 @@ unsigned long TNode<Whatever> :: Lookup (Whatever & element, fstream * fio) {
 			return 0;
 
 		} else { // if right exists, recurse using right node
-			TNode<Whatever> RightNode(right, fio); // recursive
+			TNode<Whatever> RightNode(right, fio);
+			// recursive call to lookup on the right child
 		    return RightNode.Lookup(element, fio);
 		}
 
@@ -545,7 +598,7 @@ unsigned long TNode<Whatever> :: Lookup (Whatever & element, fstream * fio) {
 		if (!left) { // if no left exists, not in tree
 			return 0;
 		} else { 
-			TNode<Whatever> LeftNode(left, fio); // recursive
+			TNode<Whatever> LeftNode(left, fio); // lookup the node in the tree
 			return LeftNode.Lookup(element, fio);
 		}
 	}
@@ -571,24 +624,26 @@ unsigned long TNode<Whatever> :: Lookup (Whatever & element, fstream * fio) {
 ***************************************************************************/
 template <class Whatever>
 unsigned long Tree<Whatever> :: Lookup (Whatever & element) const {
-	IncrementOperation();
+	IncrementOperation(); // increment the operation count
 	
-	if (occupancy == 0) { // if there is nothing in the tree, the lookkup fails
+	if (occupancy == 0) { // if there is nothing in the tree, the lookup fails
 		return 0;
+
 	} else { // if there is something in the tree
 		TNode<Whatever> readRootNode (root, fio);
-		return readRootNode.Lookup(element, fio);
+		return readRootNode.Lookup(element, fio); // call TNode's lookup
 	}
 	return 1;
 }
 
 template <class Whatever>
 void TNode<Whatever> :: Read (const offset & position, fstream * fio) {
-	fio -> seekg(position);
-	fio -> read ((char*)this, sizeof(TNode<Whatever>));
+	fio -> seekg(position); // move input pointer to proper position
+	fio -> read ((char*)this, sizeof(TNode<Whatever>)); // read in the TNode
 	
-	Tree<Whatever>:: IncrementCost();	
-	if (Tree<Whatever> :: debug_on) {
+	Tree<Whatever>:: IncrementCost(); // increment cost	
+
+	if (Tree<Whatever> :: debug_on) { // debug for reading cost increment
 		cerr<< COST_READ << (const char*)data << "]\n";
 	}
 }
@@ -596,7 +651,7 @@ void TNode<Whatever> :: Read (const offset & position, fstream * fio) {
 // tnode constructor for reading
 template <class Whatever> 
 TNode<Whatever> :: TNode (const offset & position, fstream * fio) {
-	Read(position, fio);
+	Read(position, fio); // call the read function to read in the TNode
 }
 
 // tnode constructor for writing
@@ -604,19 +659,20 @@ template <class Whatever>
 TNode<Whatever> :: TNode (Whatever & element, fstream * fio, long & occupancy): 
 			data (element), height (0), balance (0), left (0), 
 			right (0) {
-	occupancy++;
-	fio -> seekp(0, ios::end);
+	occupancy++; // increment the occupancy of the tree
+	fio -> seekp(0, ios::end); // move output pointer to end of file
 	this_position = fio -> tellp();
-	Write(fio);
+	Write(fio); // write the node to the diskfile
 }
 
 template <class Whatever>
 void TNode<Whatever> :: Write (fstream * fio) const {
-	fio -> seekp(this_position);
-	fio -> write((const char *)this, sizeof(TNode<Whatever>));
+	fio -> seekp(this_position); // moves output pointer to proper location
+	fio -> write((const char *)this, sizeof(TNode<Whatever>)); 
 
-	Tree<Whatever>:: IncrementCost();
-	if (Tree<Whatever> :: debug_on) {
+	Tree<Whatever>:: IncrementCost(); // increment cost of writing
+
+	if (Tree<Whatever> :: debug_on) { // debug for writing cost increment
 		cerr<< COST_WRITE << (const char*)data << "]\n";
 	}
 }
@@ -624,15 +680,16 @@ void TNode<Whatever> :: Write (fstream * fio) const {
 template <class Whatever>
 Tree<Whatever> :: Tree (const char * datafile) :
 	fio (new fstream (datafile, ios :: out | ios :: in)) {
-		fio -> seekp(0, ios::beg);
-		offset beginning = fio -> tellp();
-		fio -> seekp(0, ios::end);
-		offset ending = fio -> tellp();
-		occupancy = 0;
-		tree_count = 0;
+		fio -> seekp(0, ios::beg); // move output pointer to beginning
+		offset beginning = fio -> tellp(); // update beginning to that position 
+		fio -> seekp(0, ios::end); // move output pointer to end
+		offset ending = fio -> tellp(); // update ending to that position
+		occupancy = 0; // initialize occupancy to 0
+		tree_count = 0; // initialize tree_count to 0
 
 		if (beginning == ending) {
-			root = 0;
+			root = 0; // root is initialized to 0
+
 			// file is empty, reserve space for root and occupancy
 			fio -> seekp(0, ios::end);
 			fio -> write((const char *) &root, sizeof(root));
@@ -640,14 +697,17 @@ Tree<Whatever> :: Tree (const char * datafile) :
 
 			// sets the root to the next location after the offsets
 			root = fio -> tellp(); 
+
 		} else {
-			fio -> seekg(0, ios::beg);
+			fio -> seekg(0, ios::beg); // move input pointer to beginning
+			
+			// read in root and occupancy
 			fio -> read ((char*)&root, sizeof(root));
 			fio -> read ((char*)&occupancy, sizeof(occupancy));
 		}
-		tree_count++;
+		tree_count++; // increment tree_count
 
-		if (debug_on) {
+		if (debug_on) { // debug for allocating tree
 			cerr << TREE << tree_count << ALLOCATE;
 		}
 }
@@ -663,13 +723,15 @@ Tree<Whatever> :: ~Tree (void)
 %                the table.
 ***************************************************************************/
 {	
-	if (debug_on) {
+	if (debug_on) { // debug for deallocating
 		cerr<< TREE << tree_count << DEALLOCATE;
 	}
-	fio -> seekp(0, ios::beg);
+
+	fio -> seekp(0, ios::beg); // move output pointer to beginning of file
+	// update the root and occupancy
 	fio -> write((const char *) &root, sizeof(root));
 	fio -> write((const char *) &occupancy, sizeof(occupancy));
-	delete fio;
+	delete fio; // delete the fio to deallocate the tree
 }	/* end: ~Tree */
 
 template <class Whatever>

@@ -1,3 +1,19 @@
+/****************************************************************************
+
+                                                        Hillary Fan
+                                                        CSE 12, Winter 2016
+                                                        February 16, 2016
+                                                        cs12xib
+                                Assignment Nine
+
+File Name:      Driver.c
+Description:    The program holds the UCSDStudent class that implements all the
+				functions and constructors for the UCSDStudent object. It holds
+				the constructor, destructor, the getname, and it can check if 
+				the objects are equal or greater than other UCSDStudent
+				objects. It also holds the driver that has the prompts to the
+				program.
+**************************************************************************/
 #include <iostream>
 #include <cstdio>
 #include <string>
@@ -14,8 +30,8 @@ using namespace std;
 #undef NULL
 #define NULL 0
 #endif
-#define FROM_KEYBOARD 1
-#define FROM_FILE 0
+#define FROM_KEYBOARD 1 // constants to distinguish reading from keyboard
+#define FROM_FILE 0 // constant to distinguish reading from file
 
 ostream & operator << (ostream & stream, const UCSDStudent & stu) {
         return stream << "name:  " << stu.name
@@ -27,10 +43,10 @@ int main (int argc, char * const * argv) {
         char command;
         long number;
         char option;
-		int readingFrom = FROM_KEYBOARD;
+		int readingFrom = FROM_KEYBOARD; // initialize to reading from keyboard
         
-		istream * is = &cin;
-		ostream * os = &cout;
+		istream * is = &cin; // declare istream object is to keyboard
+		ostream * os = &cout; // assign ostream object to cout
         SymTab<UCSDStudent>::Set_Debug_Off ();
 
         while ((option = getopt (argc, argv, "x")) != EOF) {
@@ -45,16 +61,17 @@ int main (int argc, char * const * argv) {
         ST.Write (cout << "Initial Symbol Table:\n" );
 
         
-		while (cin) {
-			if (!*is) { // EOF
-				if (readingFrom == FROM_FILE) { // is input is from file
+		while (cin) { 
+			if (!*is) { // checks if it reads EOF
+				if (readingFrom == FROM_FILE) { // if input is from file
 					is = &cin; // switch to cin to read from keyboard
-					os = &cout;
-					readingFrom = FROM_KEYBOARD;
+					os = &cout; // switch to cout to output regularly
+					readingFrom = FROM_KEYBOARD; 
+
 				} else {
-					delete is;
+					delete is; // delete the is and os pointers
 					delete os;
-					break;
+					break; // terminate program
 				}
 			} 
 			command = NULL;         // reset command each time in loop
@@ -113,21 +130,23 @@ int main (int argc, char * const * argv) {
 				}
 
 				case 'f': {
-				
 					*os << "Please enter file name for commands: ";
-					*is >> buffer;
+					*is >> buffer; // prompt and reading in input
 
-					if (readingFrom == FROM_FILE) { // is input is from file
+					// if already reading from file
+					if (readingFrom == FROM_FILE) {
 						delete is; // delete and reset os streams
-						is = &cin;
+						is = &cin; // reassign is to read from keyboard
 						delete os;
 						os = &cout;
+						// signal that reading from keyboard now
 						readingFrom = FROM_KEYBOARD;
+					} else {
+						is = new ifstream(buffer); // start reading from file
+						readingFrom = FROM_FILE;
+						// change output location
+						os = new ofstream("/dev/null");
 					}
-
-					is = new ifstream(buffer);
-					readingFrom = FROM_FILE;
-					os = new ofstream("/dev/null");
 					break;
 				}
 			}
