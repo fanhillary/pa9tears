@@ -1,5 +1,4 @@
 /****************************************************************************
-
                                                         Hillary Fan
                                                         Christine Do
                                                         CSE 12, Winter 2016
@@ -9,12 +8,12 @@
                                 Assignment Nine
 
 File Name:      Driver.c
-Description:    The program holds the UCSDStudent class that implements all the
-				functions and constructors for the UCSDStudent object. It holds
-				the constructor, destructor, the getname, and it can check if 
-				the objects are equal or greater than other UCSDStudent
-				objects. It also holds the driver that has the prompts to the
-				program.
+Description:    The program holds the driver that has the prompts to the
+		program. It can perform lookup, insert, remove, and write
+                operations. This driver also polymorphically switches 
+                between reading input from the keyboard and reading from a
+                file. When the program terminates, cost and operations of
+                the program will be displayed to the user. 
 **************************************************************************/
 #include <iostream>
 #include <cstdio>
@@ -66,9 +65,9 @@ int main (int argc, char * const * argv) {
 		while (cin) { 
 			if (!*is) { // checks if it reads EOF
 				if (readingFrom == FROM_FILE) { // if input is from file
-					delete is; // delete the is and os pointers
+					delete is; // delete the is pointer
 					is = &cin; // switch to cin to read from keyboard
-					delete os;
+					delete os; // delete the os pointer
 					os = &cout; // switch to cout to output regularly
 					readingFrom = FROM_KEYBOARD; 
 
@@ -135,12 +134,21 @@ int main (int argc, char * const * argv) {
                                 //
 				case 'f': {
 					*os << "Please enter file name for commands: ";
-					*is >> buffer; // prompt and reading in input
 
+                                        // prompt and reading in input
+					*is >> buffer;
+
+                                        // 
+                                        // user is using the keyboard
+                                        //
 					if (readingFrom == FROM_KEYBOARD) {
-						is = new ifstream(buffer); // start reading from file
+                                                // start reading from file
+						is = new ifstream(buffer);
+
 						// change output location
 						os = new ofstream("/dev/null");
+
+                                                // switch from reading keyboard input to file
 						readingFrom = FROM_FILE;
 					}
 					break;
@@ -148,6 +156,10 @@ int main (int argc, char * const * argv) {
 			}
         }
 
+        //
+        // Cost and Operations output
+        // To be executed after the user ends the driver program with ^D
+        //
         ST.Write (cout << "\nFinal Symbol Table:\n");
 
 		if (ST.GetOperation() != 0) {
